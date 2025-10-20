@@ -29,19 +29,35 @@ export default function SignInPage() {
     setError(null)
     setEmailResent(false)
 
-    const { error } = await supabase.auth.signInWithPassword({
+    const {
+      data: { user: existingUser },
+      error: getUserError,
+    } = await supabase.auth.getUser()
+
+    const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     })
 
     if (error) {
       if (error.message.toLowerCase().includes("email not confirmed")) {
-        setError("Please confirm your email address before signing in. Check your inbox for the confirmation link.")
+        setError(
+          "Your email address has not been confirmed yet. Please check your inbox for the confirmation link and click it before signing in.",
+        )
+      } else if (error.message.toLowerCase().includes("invalid login credentials")) {
+        setError("Invalid email or password. Please try again.")
       } else {
         setError(error.message)
       }
       setLoading(false)
-    } else {
+    } else if (data?.user) {
+      if (!data.user.email_confirmed_at) {
+        setError(
+          "Your email address has not been confirmed yet. Please check your inbox for the confirmation link and click it before signing in.",
+        )
+        setLoading(false)
+        return
+      }
       router.push("/dashboard")
       router.refresh()
     }

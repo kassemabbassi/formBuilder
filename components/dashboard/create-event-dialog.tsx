@@ -42,11 +42,13 @@ export function CreateEventDialog() {
 
   const generateSlug = (title: string) => {
     const timestamp = Date.now().toString(36)
-    const randomPart1 = Math.random().toString(36).substring(2, 15)
-    const randomPart2 = Math.random().toString(36).substring(2, 15)
-    const randomPart3 = Math.random().toString(36).substring(2, 15)
+    const randomPart1 = Math.random().toString(36).substring(2, 20)
+    const randomPart2 = Math.random().toString(36).substring(2, 20)
+    const randomPart3 = Math.random().toString(36).substring(2, 20)
+    const randomPart4 = Math.random().toString(36).substring(2, 20)
+    const randomPart5 = Math.random().toString(36).substring(2, 20)
 
-    return `${timestamp}-${randomPart1}-${randomPart2}-${randomPart3}`
+    return `${timestamp}-${randomPart1}-${randomPart2}-${randomPart3}-${randomPart4}-${randomPart5}`
   }
 
   const handleCreate = async () => {

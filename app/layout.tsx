@@ -7,12 +7,9 @@ import "./globals.css"
 import { Suspense } from "react"
 
 export const metadata: Metadata = {
-  title: "FormBuilder ",
+  title: "FormBuilder - Create Professional Forms",
   description: "Build custom forms with drag-and-drop simplicity",
   generator: "v0.app",
-  icons: {
-          icon: "/form.png?v=2",  
-        },
 }
 
 export default function RootLayout({
