@@ -1,5 +1,9 @@
 {
+  "version": 2,
   "rewrites": [
-    { "source": "/f/:path*", "destination": "/f/[formId]" }
+    {
+      "source": "/f/:path*",
+      "destination": "/f/[formId]"
+    }
   ]
 }
