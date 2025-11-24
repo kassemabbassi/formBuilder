@@ -20,7 +20,11 @@ import { getSupabaseBrowserClient } from "@/lib/supabase/client"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Alert } from "@/components/ui/alert"
 
-export function CreateEventDialog() {
+interface CreateEventDialogProps {
+  onEventCreated?: () => void
+}
+
+export function CreateEventDialog({ onEventCreated }: CreateEventDialogProps) {
   const [open, setOpen] = useState(false)
   const [formData, setFormData] = useState({
     title: "",
@@ -34,6 +38,7 @@ export function CreateEventDialog() {
     organizerPhone: "",
     maxParticipants: "",
     bannerColor: "#3b82f6",
+    deadline: "",
   })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -87,6 +92,7 @@ export function CreateEventDialog() {
           organizer_phone: formData.organizerPhone.trim() || null,
           max_participants: formData.maxParticipants ? Number.parseInt(formData.maxParticipants) : null,
           banner_color: formData.bannerColor,
+          deadline: formData.deadline || null,
         })
         .select()
         .single()
@@ -94,7 +100,7 @@ export function CreateEventDialog() {
       if (insertError) {
         console.error("[v0] Error creating event:", insertError)
         setError(
-          "Failed to create event. Please make sure you've run all database migration scripts (01-create-tables.sql, 02-setup-rls.sql, 03-create-appusers-table.sql).",
+          "Failed to create event. Please make sure you've run all database migration scripts (01-create-tables.sql, 02-setup-rls.sql, 03-create-appusers-table.sql, 05-add-deadline-field.sql).",
         )
         setLoading(false)
         return
@@ -114,7 +120,9 @@ export function CreateEventDialog() {
           organizerPhone: "",
           maxParticipants: "",
           bannerColor: "#3b82f6",
+          deadline: "",
         })
+        onEventCreated?.()
         router.push(`/dashboard/events/${data.id}`)
         router.refresh()
       }
@@ -129,7 +137,7 @@ export function CreateEventDialog() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg">
+        <Button className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg cursor-pointer">
           <Plus className="mr-2 h-4 w-4" />
           Create Event
         </Button>
@@ -325,6 +333,23 @@ export function CreateEventDialog() {
                 />
               </div>
             </div>
+
+            <div className="space-y-2 border-t pt-4">
+              <Label htmlFor="deadline" className="text-base font-semibold">
+                Form Deadline (Optional)
+              </Label>
+              <p className="text-sm text-muted-foreground mb-2">
+                Set a deadline for form submissions. After this date, the form will automatically close.
+              </p>
+              <Input
+                id="deadline"
+                type="datetime-local"
+                value={formData.deadline}
+                onChange={(e) => setFormData({ ...formData, deadline: e.target.value })}
+                disabled={loading}
+                className="h-11"
+              />
+            </div>
           </div>
         </ScrollArea>
         <DialogFooter className="gap-2">
@@ -334,7 +359,7 @@ export function CreateEventDialog() {
           <Button
             onClick={handleCreate}
             disabled={loading || !formData.title.trim()}
-            className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
+            className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 cursor-pointer"
           >
             {loading ? (
               <>

@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { getSupabaseBrowserClient } from "@/lib/supabase/client"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Loader2, FileText, ArrowLeft, CheckCircle2, Mail } from "lucide-react"
+import { Loader2, FileText, ArrowLeft, CheckCircle2, Mail, Eye, EyeOff } from "lucide-react"
 import { motion } from "framer-motion"
 
 export default function SignUpPage() {
@@ -22,6 +22,8 @@ export default function SignUpPage() {
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
   const [needsConfirmation, setNeedsConfirmation] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const router = useRouter()
   const supabase = getSupabaseBrowserClient()
 
@@ -246,16 +248,25 @@ export default function SignUpPage() {
                   <Label htmlFor="password" className="text-base">
                     Password
                   </Label>
-                  <Input
-                    id="password"
-                    type="password"
-                    placeholder="••••••••"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    disabled={loading || success}
-                    className="h-11 border-primary/20 transition-all focus:border-primary/50 focus:ring-2 focus:ring-primary/20"
-                  />
+                  <div className="relative">
+                    <Input
+                      id="password"
+                      type={showPassword ? "text" : "password"}
+                      placeholder="••••••••"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                      disabled={loading || success}
+                      className="h-11 border-primary/20 transition-all focus:border-primary/50 focus:ring-2 focus:ring-primary/20 pr-10"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-primary transition-colors cursor-pointer"
+                    >
+                      {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                    </button>
+                  </div>
                   <p className="text-xs text-muted-foreground">Must be at least 6 characters</p>
                 </motion.div>
                 <motion.div
@@ -267,16 +278,25 @@ export default function SignUpPage() {
                   <Label htmlFor="confirm-password" className="text-base">
                     Confirm Password
                   </Label>
-                  <Input
-                    id="confirm-password"
-                    type="password"
-                    placeholder="••••••••"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    required
-                    disabled={loading || success}
-                    className="h-11 border-primary/20 transition-all focus:border-primary/50 focus:ring-2 focus:ring-primary/20"
-                  />
+                  <div className="relative">
+                    <Input
+                      id="confirm-password"
+                      type={showConfirmPassword ? "text" : "password"}
+                      placeholder="••••••••"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      required
+                      disabled={loading || success}
+                      className="h-11 border-primary/20 transition-all focus:border-primary/50 focus:ring-2 focus:ring-primary/20 pr-10"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-primary transition-colors cursor-pointer"
+                    >
+                      {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                    </button>
+                  </div>
                 </motion.div>
               </CardContent>
               <CardFooter className="flex flex-col space-y-4">

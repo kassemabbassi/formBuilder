@@ -4,20 +4,22 @@ A professional form builder platform similar to Google Forms, built with Next.js
 
 ## Features
 
-- **User Authentication**: Secure sign up, sign in, and password reset functionality
-- **Event Management**: Create and manage events with comprehensive details
+- **User Authentication**: Secure sign up, sign in, and password reset functionality with password visibility toggle
+- **Event Management**: Create and manage events with comprehensive details and automatic deadline enforcement
 - **Dynamic Form Builder**: Drag-and-drop interface with 24+ field types
 - **Public Form Sharing**: Generate secure, shareable URLs for form distribution
-- **Response Management**: View, search, and export form submissions
-- **Professional Design**: Beautiful UI with light/dark mode support
-- **Real-time Updates**: Instant form updates and submissions
+- **Response Management**: View, search, edit, delete, and export form submissions in real-time
+- **Professional Design**: Beautiful UI with light/dark mode support and smooth animations
+- **Real-time Updates**: Instant form updates and submissions using Supabase subscriptions
 - **Secure & Scalable**: Built with Supabase for enterprise-grade security
+- **Deadline Management**: Automatic form closure when deadline is reached
+- **Participant Management**: Edit or delete participant responses with verification dialogs
 
 ## Tech Stack
 
 - **Framework**: Next.js 15 (App Router)
 - **Database**: Supabase (PostgreSQL)
-- **Authentication**: Supabase Auth
+- **Authentication**: Supabase Auth with PKCE flow
 - **Styling**: Tailwind CSS v4
 - **UI Components**: shadcn/ui
 - **Animations**: Framer Motion
@@ -74,6 +76,9 @@ A professional form builder platform similar to Google Forms, built with Next.js
    c. **Create app users table** (`scripts/03-create-appusers-table.sql`)
       - Creates appusers table for storing user profiles
       - Links to Supabase auth users
+   
+   d. **Add deadline field** (`scripts/05-add-deadline-field.sql`)
+      - Adds deadline support to events table
 
 5. **Run the development server**
    \`\`\`bash
@@ -91,16 +96,18 @@ A professional form builder platform similar to Google Forms, built with Next.js
 **Sign Up:**
 1. Click "Get Started" or "Sign Up" on the homepage
 2. Enter your display name, email, and password (minimum 6 characters)
-3. Confirm your password
-4. Click "Create Account"
-5. Check your email for a confirmation link (if email confirmation is enabled)
-6. Click the confirmation link to activate your account
+3. Use the eye icon to toggle password visibility
+4. Confirm your password
+5. Click "Create Account"
+6. Check your email for a confirmation link
+7. Click the confirmation link to activate your account
 
 **Sign In:**
 1. Click "Sign In" on the homepage
 2. Enter your email and password
-3. Click "Sign In"
-4. You'll be redirected to your dashboard
+3. Use the eye icon to toggle password visibility
+4. Click "Sign In"
+5. You'll be redirected to your dashboard
 
 **Forgot Password:**
 1. Click "Forgot password?" on the sign-in page
@@ -122,8 +129,15 @@ A professional form builder platform similar to Google Forms, built with Next.js
    - **Organizer Information**: Your contact details
    - **Max Participants**: Limit the number of registrations
    - **Banner Color**: Customize the event's visual theme
+   - **Form Deadline**: Set an optional deadline for form submissions
 3. Click "Create Event"
 4. You'll be redirected to the form builder
+
+**Deadline Functionality:**
+- When you set a deadline, the form automatically closes at that exact time
+- Participants cannot submit after the deadline
+- The form displays a "Form Closed" message if accessed after the deadline
+- You can still manually close forms by toggling the active status
 
 ### 3. Build Your Form
 
@@ -155,7 +169,7 @@ The form builder has three main sections:
 
 **Saving:**
 - Click "Save Form" to save your changes
-- Changes are saved to the database immediately
+- Changes are saved to the database immediately with real-time updates
 
 ### 4. Share Your Form
 
@@ -172,6 +186,8 @@ The form builder has three main sections:
 https://your-domain.com/f/[unique-slug]
 \`\`\`
 
+The slug is extremely long and random, making it virtually impossible to guess.
+
 ### 5. View Responses
 
 1. From your dashboard, click "View Responses" on an event card
@@ -179,15 +195,18 @@ https://your-domain.com/f/[unique-slug]
    - Total number of submissions
    - Submission date and time
    - First 3 fields of each response
-3. Click "View Details" to see the complete submission
+3. Click the eye icon to see the complete submission
 4. Use the search bar to filter responses
 5. Click "Export CSV" to download all responses
 
 **Response Management Features:**
-- Search through submissions
+- Search through submissions in real-time
 - View detailed information for each response
+- **Edit Responses**: Click "Edit" to modify participant data
+- **Delete Responses**: Click "Delete" to remove a submission (requires confirmation)
 - Export data to CSV for analysis
 - See submission metadata (date, time, user agent)
+- All changes update in real-time across all users
 
 ### 6. Edit or Delete Events
 
@@ -195,12 +214,13 @@ https://your-domain.com/f/[unique-slug]
 1. Click on the event card or "Edit" button
 2. Modify the form fields as needed
 3. Click "Save Form"
+4. Changes appear instantly on the dashboard
 
 **Delete an Event:**
-1. Click the three-dot menu on an event card
-2. Select "Delete"
-3. Confirm the deletion
-4. All associated form submissions will also be deleted
+1. Click the delete button (trash icon) on an event card
+2. Confirm the deletion
+3. All associated form submissions will also be deleted
+4. The event disappears from your dashboard immediately
 
 ### 7. Manage Your Account
 
@@ -215,23 +235,28 @@ https://your-domain.com/f/[unique-slug]
 ## Security Features
 
 - **Row Level Security (RLS)**: Users can only access their own events and submissions
-- **Secure Authentication**: Powered by Supabase Auth with PKCE flow
-- **Password Requirements**: Minimum 6 characters with confirmation
-- **Email Verification**: Optional email confirmation for new accounts
-- **Secure Form URLs**: Long, random slugs prevent guessing
+- **Secure Authentication**: Powered by Supabase Auth with PKCE flow and email verification
+- **Password Requirements**: Minimum 6 characters with confirmation and visibility toggle
+- **Email Verification**: Required email confirmation for new accounts
+- **Secure Form URLs**: Extremely long, random slugs (40+ characters) prevent guessing
 - **Input Validation**: Client and server-side validation for all fields
 - **SQL Injection Protection**: Parameterized queries via Supabase client
 - **XSS Protection**: React's built-in escaping and sanitization
+- **CSRF Protection**: Supabase handles CSRF tokens automatically
+- **Secure Headers**: Proper security headers configured in Next.js
+- **Real-time Subscriptions**: Secure WebSocket connections via Supabase
 
 ## Performance Optimizations
 
 - **Server Components**: Reduced JavaScript bundle size
+- **Real-time Subscriptions**: Instant updates without polling
 - **Optimistic Updates**: Instant UI feedback
 - **Lazy Loading**: Components loaded on demand
 - **Image Optimization**: Next.js automatic image optimization
 - **Caching**: Supabase query caching
 - **Code Splitting**: Automatic route-based splitting
 - **Framer Motion**: Hardware-accelerated animations
+- **Responsive Design**: Mobile-first approach with proper scrolling
 
 ## Deployment
 
@@ -302,6 +327,13 @@ If you see 400 Bad Request errors:
 - Optimize queries by adding indexes
 - Enable Supabase connection pooling
 - Use Vercel Edge Functions for better performance
+
+### Real-time Updates Not Working
+
+- Ensure Supabase Realtime is enabled in your project
+- Check browser console for WebSocket errors
+- Verify RLS policies allow the operations
+- Restart the development server
 
 ## Support
 

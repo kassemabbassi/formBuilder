@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation"
 import type { Event, FormField } from "@/lib/types"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Loader2, Calendar, MapPin, Users, Mail, Phone, Clock } from "lucide-react"
+import { Loader2, Calendar, MapPin, Users, Mail, Phone, Clock, AlertTriangle } from "lucide-react"
 import { FormFieldRenderer } from "./form-field-renderer"
 import { getSupabaseBrowserClient } from "@/lib/supabase/client"
 import { Alert, AlertDescription } from "@/components/ui/alert"
@@ -16,9 +16,10 @@ import { AnimatedBackground } from "./animated-background"
 interface PublicFormViewProps {
   event: Event
   fields: FormField[]
+  isDeadlinePassed?: boolean
 }
 
-export function PublicFormView({ event, fields }: PublicFormViewProps) {
+export function PublicFormView({ event, fields, isDeadlinePassed = false }: PublicFormViewProps) {
   const [formData, setFormData] = useState<Record<string, string>>({})
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [submitting, setSubmitting] = useState(false)
@@ -104,6 +105,7 @@ export function PublicFormView({ event, fields }: PublicFormViewProps) {
           event_id: event.id,
           ip_address: null,
           user_agent: navigator.userAgent,
+          is_manually_completed: false,
         })
         .select()
         .single()
@@ -145,6 +147,67 @@ export function PublicFormView({ event, fields }: PublicFormViewProps) {
       minute: "2-digit",
       hour12: true,
     })
+  }
+
+  if (isDeadlinePassed) {
+    return (
+      <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-blue-950 dark:to-indigo-950">
+        <AnimatedBackground />
+        <div className="relative flex min-h-screen items-center justify-center p-4">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.6 }}
+            className="w-full max-w-2xl"
+          >
+            <Card className="border-2 border-red-200 bg-card/95 shadow-2xl backdrop-blur-sm">
+              <CardContent className="flex flex-col items-center justify-center py-16 text-center">
+                <motion.div
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ delay: 0.2, duration: 0.4 }}
+                  className="mb-6 rounded-full bg-red-100 p-4 dark:bg-red-900/30"
+                >
+                  <AlertTriangle className="h-12 w-12 text-red-600 dark:text-red-400" />
+                </motion.div>
+                <motion.h1
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.3, duration: 0.4 }}
+                  className="mb-3 text-3xl font-bold text-foreground"
+                >
+                  Form Closed
+                </motion.h1>
+                <motion.p
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.4, duration: 0.4 }}
+                  className="mb-6 text-lg text-muted-foreground"
+                >
+                  This form has reached its deadline and is no longer accepting submissions.
+                </motion.p>
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.5, duration: 0.4 }}
+                  className="rounded-lg bg-muted p-4"
+                >
+                  <p className="text-sm font-medium">Deadline: {formatDate(event.deadline)}</p>
+                </motion.div>
+                <motion.p
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.6, duration: 0.4 }}
+                  className="mt-6 text-sm text-muted-foreground"
+                >
+                  If you have any questions, please contact the organizer.
+                </motion.p>
+              </CardContent>
+            </Card>
+          </motion.div>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -213,9 +276,6 @@ export function PublicFormView({ event, fields }: PublicFormViewProps) {
                     <div>
                       <p className="text-xs font-medium text-muted-foreground">Start Date</p>
                       <p className="text-sm font-semibold">{formatDate(event.start_date)}</p>
-                      {event.start_time && (
-                        <p className="text-xs text-muted-foreground">{formatTime(event.start_time)}</p>
-                      )}
                     </div>
                   </div>
                 )}
@@ -228,7 +288,6 @@ export function PublicFormView({ event, fields }: PublicFormViewProps) {
                     <div>
                       <p className="text-xs font-medium text-muted-foreground">End Date</p>
                       <p className="text-sm font-semibold">{formatDate(event.end_date)}</p>
-                      {event.end_time && <p className="text-xs text-muted-foreground">{formatTime(event.end_time)}</p>}
                     </div>
                   </div>
                 )}
@@ -278,6 +337,18 @@ export function PublicFormView({ event, fields }: PublicFormViewProps) {
                     <div>
                       <p className="text-xs font-medium text-muted-foreground">Phone</p>
                       <p className="text-sm font-semibold">{event.organizer_phone}</p>
+                    </div>
+                  </div>
+                )}
+
+                {event.deadline && (
+                  <div className="flex items-center gap-3 rounded-lg bg-gradient-to-br from-orange-100 to-red-100 p-4 backdrop-blur-sm dark:from-orange-900/30 dark:to-red-900/30">
+                    <div className="rounded-full bg-orange-200 p-2 dark:bg-orange-900/50">
+                      <Clock className="h-5 w-5 text-orange-600 dark:text-orange-400" />
+                    </div>
+                    <div>
+                      <p className="text-xs font-medium text-muted-foreground">Deadline</p>
+                      <p className="text-sm font-semibold">{formatDate(event.deadline)}</p>
                     </div>
                   </div>
                 )}

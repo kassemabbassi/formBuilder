@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { getSupabaseBrowserClient } from "@/lib/supabase/client"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Loader2, FileText, ArrowLeft, Mail } from "lucide-react"
+import { Loader2, FileText, ArrowLeft, Mail, Eye, EyeOff } from "lucide-react"
 import { motion } from "framer-motion"
 
 export default function SignInPage() {
@@ -20,6 +20,7 @@ export default function SignInPage() {
   const [error, setError] = useState<string | null>(null)
   const [resendingEmail, setResendingEmail] = useState(false)
   const [emailResent, setEmailResent] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
   const router = useRouter()
   const supabase = getSupabaseBrowserClient()
 
@@ -232,16 +233,25 @@ export default function SignInPage() {
                       Forgot password?
                     </Link>
                   </div>
-                  <Input
-                    id="password"
-                    type="password"
-                    placeholder="••••••••"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    disabled={loading}
-                    className="h-11 border-primary/20 transition-all focus:border-primary/50 focus:ring-2 focus:ring-primary/20"
-                  />
+                  <div className="relative">
+                    <Input
+                      id="password"
+                      type={showPassword ? "text" : "password"}
+                      placeholder="••••••••"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                      disabled={loading}
+                      className="h-11 border-primary/20 transition-all focus:border-primary/50 focus:ring-2 focus:ring-primary/20 pr-10"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-primary transition-colors cursor-pointer"
+                    >
+                      {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                    </button>
+                  </div>
                 </motion.div>
               </CardContent>
               <CardFooter className="flex flex-col space-y-4">

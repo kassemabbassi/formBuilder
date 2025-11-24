@@ -3,7 +3,8 @@ import { getSupabaseServerClient } from "@/lib/supabase/server"
 import { DashboardHeader } from "@/components/dashboard/dashboard-header"
 import { ResponsesView } from "@/components/responses/responses-view"
 
-export default async function ResponsesPage({ params }: { params: { id: string } }) {
+export default async function ResponsesPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
   const supabase = await getSupabaseServerClient()
 
   const {
@@ -13,8 +14,6 @@ export default async function ResponsesPage({ params }: { params: { id: string }
   if (!user) {
     redirect("/auth/signin")
   }
-
-  const { id } = params
 
   const { data: event } = await supabase.from("events").select("*").eq("id", id).single()
 

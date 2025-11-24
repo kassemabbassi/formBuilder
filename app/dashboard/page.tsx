@@ -18,8 +18,29 @@ export default function DashboardPage() {
   const [error, setError] = useState<string | null>(null)
   const supabase = getSupabaseBrowserClient()
 
+  const loadEvents = async () => {
+    try {
+      const { data: eventsData, error: eventsError } = await supabase
+        .from("events")
+        .select("*")
+        .order("created_at", { ascending: false })
+
+      if (eventsError) {
+        console.error("[v0] Error loading events:", eventsError)
+        setError(
+          "Failed to load events. Please make sure you've run all database migration scripts in the correct order.",
+        )
+      } else {
+        setEvents(eventsData || [])
+      }
+    } catch (err) {
+      console.error("[v0] Error in loadEvents:", err)
+      setError("An unexpected error occurred. Please try refreshing the page.")
+    }
+  }
+
   useEffect(() => {
-    async function loadData() {
+    async function initializeData() {
       try {
         const {
           data: { user },
@@ -30,29 +51,35 @@ export default function DashboardPage() {
         }
 
         setUser(user)
-
-        const { data: eventsData, error: eventsError } = await supabase
-          .from("events")
-          .select("*")
-          .order("created_at", { ascending: false })
-
-        if (eventsError) {
-          console.error("[v0] Error loading events:", eventsError)
-          setError(
-            "Failed to load events. Please make sure you've run all database migration scripts in the correct order.",
-          )
-        } else {
-          setEvents(eventsData || [])
-        }
+        await loadEvents()
       } catch (err) {
-        console.error("[v0] Error in loadData:", err)
+        console.error("[v0] Error in initializeData:", err)
         setError("An unexpected error occurred. Please try refreshing the page.")
       } finally {
         setLoading(false)
       }
     }
 
-    loadData()
+    initializeData()
+
+    const subscription = supabase
+      .channel("events_changes")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "events",
+        },
+        () => {
+          loadEvents()
+        },
+      )
+      .subscribe()
+
+    return () => {
+      subscription.unsubscribe()
+    }
   }, [])
 
   if (loading) {
@@ -80,7 +107,7 @@ export default function DashboardPage() {
               </h1>
               <p className="text-muted-foreground mt-1">Create and manage your form events</p>
             </div>
-            <CreateEventDialog />
+            <CreateEventDialog onEventCreated={loadEvents} />
           </motion.div>
 
           {error && (
@@ -93,7 +120,7 @@ export default function DashboardPage() {
             </motion.div>
           )}
 
-          <EventsList events={events} />
+          <EventsList events={events} onEventDeleted={loadEvents} />
         </div>
       </main>
     </div>

@@ -12,11 +12,15 @@ export default async function PublicFormPage({ params }: { params: Promise<{ slu
     notFound()
   }
 
+  const now = new Date()
+  const deadline = event.deadline ? new Date(event.deadline) : null
+  const isDeadlinePassed = deadline ? deadline <= now : false
+
   const { data: fields } = await supabase
     .from("form_fields")
     .select("*")
     .eq("event_id", event.id)
     .order("order_index", { ascending: true })
 
-  return <PublicFormView event={event} fields={fields || []} />
+  return <PublicFormView event={event} fields={fields || []} isDeadlinePassed={isDeadlinePassed} />
 }
