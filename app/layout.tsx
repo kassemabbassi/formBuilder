@@ -10,6 +10,9 @@ export const metadata: Metadata = {
   title: "FormBuilder - Create Professional Forms",
   description: "Build custom forms with drag-and-drop simplicity",
   generator: "v0.app",
+  icons: {
+    icon: "/form.png",
+  },
 }
 
 export default function RootLayout({

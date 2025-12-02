@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 import type { Event, FormField } from "@/lib/types"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -34,29 +34,34 @@ interface ResponsesViewProps {
 export function ResponsesView({ event, fields, submissions }: ResponsesViewProps) {
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedSubmission, setSelectedSubmission] = useState<Submission | null>(null)
+  const [submissionsState, setSubmissionsState] = useState<Submission[]>(submissions)
   const { toast } = useToast()
 
+  useEffect(() => {
+    setSubmissionsState(submissions)
+  }, [submissions])
+
   const filteredSubmissions = useMemo(() => {
-    if (!searchQuery.trim()) return submissions
+    if (!searchQuery.trim()) return submissionsState
 
     const query = searchQuery.toLowerCase()
-    return submissions.filter((submission) => {
+    return submissionsState.filter((submission) => {
       return submission.answers.some((answer) => {
         const field = fields.find((f) => f.id === answer.field_id)
         return answer.answer.toLowerCase().includes(query) || field?.label.toLowerCase().includes(query)
       })
     })
-  }, [submissions, searchQuery, fields])
+  }, [submissionsState, searchQuery, fields])
 
   const exportToCSV = () => {
-    if (submissions.length === 0) return
+    if (submissionsState.length === 0) return
 
     // Create CSV header
     const headers = ["Submission ID", "Submitted At", ...fields.map((f) => f.label)]
     const csvRows = [headers.join(",")]
 
     // Add data rows
-    submissions.forEach((submission) => {
+    submissionsState.forEach((submission) => {
       const row = [
         submission.id,
         new Date(submission.submitted_at).toLocaleString(),
@@ -314,7 +319,7 @@ export function ResponsesView({ event, fields, submissions }: ResponsesViewProps
       </div>
 
       {/* Main Content Area */}
-      {submissions.length === 0 ? (
+      {submissionsState.length === 0 ? (
         <Card className="
           /* Shadow and border */
           shadow-sm border-border/50
@@ -403,9 +408,9 @@ export function ResponsesView({ event, fields, submissions }: ResponsesViewProps
                   sm:text-base
                   mt-1
                 ">
-                  {filteredSubmissions.length === submissions.length
-                    ? `Showing all ${submissions.length} responses`
-                    : `Showing ${filteredSubmissions.length} of ${submissions.length} responses`}
+                  {filteredSubmissions.length === submissionsState.length
+                    ? `Showing all ${submissionsState.length} responses`
+                    : `Showing ${filteredSubmissions.length} of ${submissionsState.length} responses`}
                   {searchQuery && (
                     <span className="
                       hidden
@@ -423,7 +428,7 @@ export function ResponsesView({ event, fields, submissions }: ResponsesViewProps
                 flex items-center gap-4
                 text-xs text-muted-foreground
               ">
-                <span>Total: {submissions.length}</span>
+                <span>Total: {submissionsState.length}</span>
                 {searchQuery && (
                   <span>Filtered: {filteredSubmissions.length}</span>
                 )}
@@ -454,6 +459,14 @@ export function ResponsesView({ event, fields, submissions }: ResponsesViewProps
           fields={fields}
           open={!!selectedSubmission}
           onClose={() => setSelectedSubmission(null)}
+          onDelete={(deletedId) => {
+            setSubmissionsState((prev) => prev.filter((submission) => submission.id !== deletedId))
+            setSelectedSubmission(null)
+            toast({
+              title: "Response deleted",
+              description: "This participant’s response has been removed.",
+            })
+          }}
         />
       )}
     </div>

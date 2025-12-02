@@ -7,10 +7,11 @@ import { Badge } from "@/components/ui/badge"
 import { Calendar, ExternalLink, Eye, Settings, Trash2, FileText } from "lucide-react"
 import Link from "next/link"
 import { formatDistanceToNow } from "date-fns"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { getSupabaseBrowserClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
 import { motion } from "framer-motion"
+import { useToast } from "@/hooks/use-toast"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -31,11 +32,39 @@ export function EventsList({ events }: EventsListProps) {
   const router = useRouter()
   const supabase = getSupabaseBrowserClient()
   const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [localEvents, setLocalEvents] = useState(events)
+  const { toast } = useToast()
+
+  useEffect(() => {
+    setLocalEvents(events)
+  }, [events])
 
   const handleDelete = async (eventId: string) => {
     setDeletingId(eventId)
-    await supabase.from("events").delete().eq("id", eventId)
-    router.refresh()
+    let previousEvents: Event[] = []
+
+    setLocalEvents((prev) => {
+      previousEvents = prev
+      return prev.filter((event) => event.id !== eventId)
+    })
+
+    const { error } = await supabase.from("events").delete().eq("id", eventId)
+
+    if (error) {
+      setLocalEvents(previousEvents)
+      toast({
+        title: "Failed to delete event",
+        description: error.message,
+        variant: "destructive",
+      })
+    } else {
+      toast({
+        title: "Event deleted",
+        description: "The event and its responses were removed.",
+      })
+      router.refresh()
+    }
+
     setDeletingId(null)
   }
 
@@ -44,7 +73,7 @@ export function EventsList({ events }: EventsListProps) {
     navigator.clipboard.writeText(url)
   }
 
-  if (events.length === 0) {
+  if (localEvents.length === 0) {
     return (
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
@@ -66,7 +95,7 @@ export function EventsList({ events }: EventsListProps) {
 
   return (
     <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-      {events.map((event, index) => (
+      {localEvents.map((event, index) => (
         <motion.div
           key={event.id}
           initial={{ opacity: 0, y: 20 }}

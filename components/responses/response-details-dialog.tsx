@@ -47,7 +47,7 @@ interface ResponseDetailsDialogProps {
   fields: FormField[]
   open: boolean
   onClose: () => void
-  onDelete?: () => void
+  onDelete?: (submissionId: string) => void
 }
 
 export function ResponseDetailsDialog({ submission, fields, open, onClose, onDelete }: ResponseDetailsDialogProps) {
@@ -132,12 +132,8 @@ export function ResponseDetailsDialog({ submission, fields, open, onClose, onDel
       setIsEditing(false)
       setEditedAnswers({})
       
-      // Close dialog and trigger refresh to reload data from database
+      // Close dialog to reflect the saved state; parent can optionally refresh data.
       onClose()
-      
-      if (onDelete) {
-        onDelete()
-      }
     } catch (error: any) {
       console.error("Error saving changes:", error)
       setError(error.message || "Failed to save changes. Please try again.")
@@ -206,7 +202,7 @@ export function ResponseDetailsDialog({ submission, fields, open, onClose, onDel
       
       // Trigger parent component refresh
       if (onDelete) {
-        onDelete()
+        onDelete(submission.id)
       }
     } catch (error: any) {
       console.error("Error in delete operation:", error)
