@@ -4,20 +4,21 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  --background: oklch(0.99 0.005 240);
-  --foreground: oklch(0.2 0.02 240);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.2 0.02 240);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.2 0.02 240);
-  --primary: oklch(0.55 0.15 240);
+  /* Light mode – soft blue / indigo with clear contrast */
+  --background: oklch(0.98 0.03 230); /* very light blue */
+  --foreground: oklch(0.23 0.05 245); /* dark desaturated blue */
+  --card: oklch(0.99 0.01 240);
+  --card-foreground: oklch(0.23 0.05 245);
+  --popover: oklch(0.99 0.01 240);
+  --popover-foreground: oklch(0.23 0.05 245);
+  --primary: oklch(0.6 0.16 240); /* royal blue */
   --primary-foreground: oklch(0.99 0.005 240);
-  --secondary: oklch(0.88 0.03 240);
-  --secondary-foreground: oklch(0.2 0.02 240);
-  --muted: oklch(0.95 0.01 240);
-  --muted-foreground: oklch(0.5 0.02 240);
-  --accent: oklch(0.65 0.18 220);
-  --accent-foreground: oklch(0.99 0.005 240);
+  --secondary: oklch(0.93 0.04 230); /* soft blue-gray chip */
+  --secondary-foreground: oklch(0.23 0.05 245);
+  --muted: oklch(0.95 0.015 235);
+  --muted-foreground: oklch(0.48 0.03 245);
+  --accent: oklch(0.7 0.14 220); /* lighter cyan/blue accent */
+  --accent-foreground: oklch(0.2 0.04 245);
   --destructive: oklch(0.577 0.245 27.325);
   --destructive-foreground: oklch(0.99 0.005 240);
   --border: oklch(0.9 0.01 240);
@@ -40,20 +41,21 @@
 }
 
 .dark {
-  --background: oklch(0.15 0.02 240);
-  --foreground: oklch(0.95 0.01 240);
-  --card: oklch(0.18 0.02 240);
-  --card-foreground: oklch(0.95 0.01 240);
-  --popover: oklch(0.18 0.02 240);
-  --popover-foreground: oklch(0.95 0.01 240);
-  --primary: oklch(0.65 0.18 220);
-  --primary-foreground: oklch(0.15 0.02 240);
-  --secondary: oklch(0.25 0.03 240);
-  --secondary-foreground: oklch(0.95 0.01 240);
-  --muted: oklch(0.22 0.02 240);
-  --muted-foreground: oklch(0.6 0.02 240);
-  --accent: oklch(0.55 0.15 240);
-  --accent-foreground: oklch(0.95 0.01 240);
+  /* Dark mode – deep navy with vibrant blue gradients */
+  --background: oklch(0.16 0.04 240); /* deep navy */
+  --foreground: oklch(0.96 0.02 240);
+  --card: oklch(0.18 0.04 240);
+  --card-foreground: oklch(0.96 0.02 240);
+  --popover: oklch(0.18 0.04 240);
+  --popover-foreground: oklch(0.96 0.02 240);
+  --primary: oklch(0.7 0.18 240); /* bright blue for CTAs */
+  --primary-foreground: oklch(0.16 0.04 240);
+  --secondary: oklch(0.25 0.04 250); /* muted indigo surfaces */
+  --secondary-foreground: oklch(0.96 0.02 240);
+  --muted: oklch(0.22 0.03 245);
+  --muted-foreground: oklch(0.68 0.05 245);
+  --accent: oklch(0.65 0.18 220); /* cyan-ish accent for gradients */
+  --accent-foreground: oklch(0.96 0.02 240);
   --destructive: oklch(0.5 0.2 27.325);
   --destructive-foreground: oklch(0.95 0.01 240);
   --border: oklch(0.25 0.03 240);
@@ -122,8 +124,21 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground antialiased;
+
+    /* Subtle blue gradient background for both themes */
+    background-image:
+      radial-gradient(circle at 0% 0%, color-mix(in oklab, var(--accent) 18%, transparent) 0, transparent 55%),
+      radial-gradient(circle at 100% 100%, color-mix(in oklab, var(--primary) 22%, transparent) 0, transparent 55%);
+    background-attachment: fixed;
   }
+}
+
+.dark body {
+  /* Slightly stronger gradient in dark mode for depth */
+  background-image:
+    radial-gradient(circle at 0% 0%, color-mix(in oklab, var(--accent) 30%, transparent) 0, transparent 55%),
+    radial-gradient(circle at 100% 100%, color-mix(in oklab, var(--primary) 34%, transparent) 0, transparent 55%);
 }
 
 /* Added smooth animations and transitions */

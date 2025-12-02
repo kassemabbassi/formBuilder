@@ -46,6 +46,43 @@ export async function middleware(request: NextRequest) {
       console.error("[v0] Auth error in middleware:", error.message)
     }
 
+    // Enforce a maximum authenticated lifetime of 5 hours
+    const FIVE_HOURS_IN_MS = 5 * 60 * 60 * 1000
+    const sessionStartedCookie = request.cookies.get("app_session_started_at")
+
+    if (user) {
+      const now = Date.now()
+
+      // If no session-start cookie exists, create one
+      if (!sessionStartedCookie) {
+        supabaseResponse.cookies.set("app_session_started_at", String(now), {
+          httpOnly: true,
+          maxAge: FIVE_HOURS_IN_MS / 1000,
+          path: "/",
+        })
+      } else {
+        const startedAt = Number(sessionStartedCookie.value)
+        if (!Number.isNaN(startedAt) && now - startedAt > FIVE_HOURS_IN_MS) {
+          // Session exceeded 5 hours: clear Supabase auth cookies and our marker, then redirect to sign-in
+          const response = NextResponse.redirect(new URL("/auth/signin", request.url))
+
+          request.cookies.getAll().forEach((cookie) => {
+            if (cookie.name.startsWith("sb-") || cookie.name === "app_session_started_at") {
+              response.cookies.set(cookie.name, "", { maxAge: 0, path: "/" })
+            }
+          })
+
+          return response
+        }
+      }
+    } else if (sessionStartedCookie) {
+      // Ensure we clear stale marker when user is not authenticated
+      supabaseResponse.cookies.set("app_session_started_at", "", {
+        maxAge: 0,
+        path: "/",
+      })
+    }
+
     // Protect dashboard routes
     if (request.nextUrl.pathname.startsWith("/dashboard") && !user) {
       return NextResponse.redirect(new URL("/auth/signin", request.url))

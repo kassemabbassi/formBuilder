@@ -9,6 +9,7 @@ import { ArrowLeft, Download, Search, FileText, Filter, Share2 } from "lucide-re
 import Link from "next/link"
 import { ResponsesTable } from "./responses-table"
 import { ResponseDetailsDialog } from "./response-details-dialog"
+import { useToast } from "@/hooks/use-toast"
 
 interface Submission {
   id: string
@@ -33,6 +34,7 @@ interface ResponsesViewProps {
 export function ResponsesView({ event, fields, submissions }: ResponsesViewProps) {
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedSubmission, setSelectedSubmission] = useState<Submission | null>(null)
+  const { toast } = useToast()
 
   const filteredSubmissions = useMemo(() => {
     if (!searchQuery.trim()) return submissions
@@ -75,6 +77,30 @@ export function ResponsesView({ event, fields, submissions }: ResponsesViewProps
     a.download = `${event.slug}-responses-${new Date().toISOString().split("T")[0]}.csv`
     a.click()
     window.URL.revokeObjectURL(url)
+  }
+
+  const shareFormLink = async () => {
+    try {
+      const url =
+        typeof window !== "undefined"
+          ? `${window.location.origin}/f/${event.slug}`
+          : `/f/${event.slug}`
+
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(url)
+      }
+
+      toast({
+        title: "Form link copied",
+        description: "You can now share it with your participants.",
+      })
+    } catch {
+      toast({
+        title: "Unable to copy link",
+        description: "Please copy the URL from your browser address bar.",
+        variant: "destructive",
+      })
+    }
   }
 
  
