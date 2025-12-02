@@ -149,6 +149,8 @@ export function PublicFormView({ event, fields, isDeadlinePassed = false }: Publ
     })
   }
 
+  const formattedDeadline = formatDate(event.deadline)
+
   if (isDeadlinePassed) {
     return (
       <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-blue-950 dark:to-indigo-950">
@@ -363,10 +365,35 @@ export function PublicFormView({ event, fields, isDeadlinePassed = false }: Publ
           >
             <Card className="border-2 border-primary/20 bg-card/95 shadow-2xl backdrop-blur-sm">
               <CardHeader className="space-y-2 border-b border-primary/10 bg-gradient-to-r from-primary/5 to-accent/5">
-                <CardTitle className="text-2xl">Registration Form</CardTitle>
-                <CardDescription className="text-base">
-                  Please fill out the form below to register for this event
-                </CardDescription>
+                <motion.div
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.45, duration: 0.35 }}
+                  className="space-y-1"
+                >
+                  <CardTitle className="text-2xl">Registration Form</CardTitle>
+                  <CardDescription className="text-base">
+                    Please fill out the form below to register for this event
+                  </CardDescription>
+                </motion.div>
+
+                <motion.div
+                  initial={{ opacity: 0, y: 4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.5, duration: 0.35 }}
+                  className="mt-2 flex flex-wrap items-center gap-2 text-xs sm:text-sm text-muted-foreground"
+                >
+                  {formattedDeadline && (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-orange-100/80 px-3 py-1 font-medium text-orange-700 shadow-sm dark:bg-orange-500/15 dark:text-orange-200">
+                      <Clock className="h-3.5 w-3.5" />
+                      Closes on {formattedDeadline}
+                    </span>
+                  )}
+                  <span className="inline-flex items-center gap-1 rounded-full bg-primary/5 px-3 py-1">
+                    <Users className="h-3.5 w-3.5 text-primary" />
+                    {fields.length} question{fields.length === 1 ? "" : "s"}
+                  </span>
+                </motion.div>
               </CardHeader>
               <form onSubmit={handleSubmit}>
                 <CardContent className="space-y-6 pt-6">

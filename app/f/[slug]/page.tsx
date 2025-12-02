@@ -14,7 +14,15 @@ export default async function PublicFormPage({ params }: { params: Promise<{ slu
 
   const now = new Date()
   const deadline = event.deadline ? new Date(event.deadline) : null
-  const isDeadlinePassed = deadline ? deadline <= now : false
+
+  // Consider the deadline as the end of that day (23:59:59) so the form stays open
+  // for the entire specified date and is automatically blocked from the next day on.
+  let isDeadlinePassed = false
+  if (deadline) {
+    const endOfDeadlineDay = new Date(deadline)
+    endOfDeadlineDay.setHours(23, 59, 59, 999)
+    isDeadlinePassed = now > endOfDeadlineDay
+  }
 
   const { data: fields } = await supabase
     .from("form_fields")
